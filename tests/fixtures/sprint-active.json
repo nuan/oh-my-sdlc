@@ -7,5 +7,7 @@
       "状态": { "select": { "name": "Active" } },
       "结束日期": { "date": { "start": "2099-12-31" } }
     }
-  }]
+  }],
+  "next_cursor": null,
+  "has_more": false
 }

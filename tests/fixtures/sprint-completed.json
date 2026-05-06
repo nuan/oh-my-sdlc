@@ -7,5 +7,7 @@
       "状态": { "select": { "name": "Completed" } },
       "结束日期": { "date": { "start": "2020-01-01" } }
     }
-  }]
+  }],
+  "next_cursor": null,
+  "has_more": false
 }
