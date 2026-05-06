@@ -1,0 +1,11 @@
+{
+  "object": "list",
+  "results": [{
+    "id": "sprint-xyz-456",
+    "properties": {
+      "名称": { "title": [{ "plain_text": "Sprint-001" }] },
+      "状态": { "select": { "name": "Completed" } },
+      "结束日期": { "date": { "start": "2020-01-01" } }
+    }
+  }]
+}

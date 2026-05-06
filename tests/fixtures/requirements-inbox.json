@@ -1,0 +1,11 @@
+{
+  "object": "list",
+  "results": [{
+    "id": "req-ccc-333",
+    "properties": {
+      "标题": { "title": [{ "plain_text": "新增导出功能" }] },
+      "状态": { "select": { "name": "Inbox" } },
+      "优先级": { "select": { "name": "P2" } }
+    }
+  }]
+}

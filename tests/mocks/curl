@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# mock curl：根据环境变量返回预设内容
+if [ -n "${MOCK_CURL_RESPONSE_FILE:-}" ]; then
+  cat "${MOCK_CURL_RESPONSE_FILE}"
+elif [ -n "${MOCK_CURL_RESPONSE:-}" ]; then
+  echo "${MOCK_CURL_RESPONSE}"
+else
+  echo '{"object":"error","status":400,"message":"mock curl: no response configured"}'
+fi
+exit "${MOCK_CURL_EXIT_CODE:-0}"
