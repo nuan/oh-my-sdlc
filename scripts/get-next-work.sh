@@ -51,7 +51,11 @@ if [ "$sprint_count" -gt 0 ]; then
   sprint_end=$(echo "$sprint_result" | jq -r '.results[0].properties["结束日期"].date.start // ""')
 
   if [ -n "$sprint_end" ]; then
-    sprint_end_epoch=$(date -u -d "$sprint_end" +%s 2>/dev/null || date -u -j -f "%Y-%m-%d" "$sprint_end" +%s 2>/dev/null || echo $((NOW_EPOCH + 86400)))
+    sprint_end_epoch=$(date -u -d "$sprint_end" +%s 2>/dev/null || \
+      date -u -j -f "%Y-%m-%d" "$sprint_end" +%s 2>/dev/null || {
+        echo "Warning: unable to parse sprint end date '${sprint_end}', assuming not expired" >&2
+        echo $((NOW_EPOCH + 86400))
+      })
   else
     sprint_end_epoch=$((NOW_EPOCH + 86400))
   fi

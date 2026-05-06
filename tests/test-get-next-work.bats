@@ -42,3 +42,22 @@ teardown() { teardown_test_env; }
   assert_success
   echo "$output" | jq . > /dev/null
 }
+
+@test "JSON 输出包含所有必需字段" {
+  export MOCK_QUOTA_COMPLETED=5
+  export MOCK_CURL_RESPONSE_FILE="${FIXTURES_DIR}/empty-results.json"
+  run bash scripts/get-next-work.sh
+  assert_success
+  echo "$output" | jq -e 'has("phase")' > /dev/null
+  echo "$output" | jq -e 'has("task_id")' > /dev/null
+  echo "$output" | jq -e 'has("task_title")' > /dev/null
+  echo "$output" | jq -e 'has("skill")' > /dev/null
+}
+
+@test "配额为 0 且所有查询无结果时返回 IDLE" {
+  export MOCK_QUOTA_COMPLETED=0
+  export MOCK_CURL_RESPONSE_FILE="${FIXTURES_DIR}/empty-results.json"
+  run bash scripts/get-next-work.sh
+  assert_success
+  assert_equal "$(echo "$output" | jq -r '.phase')" "IDLE"
+}
