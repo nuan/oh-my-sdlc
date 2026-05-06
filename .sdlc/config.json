@@ -1,0 +1,29 @@
+{
+  "databases": {
+    "requirements": "req-db-id",
+    "sprints": "sprint-db-id",
+    "tasks": "task-db-id",
+    "deployments": "deploy-db-id",
+    "monitor_logs": "monitor-db-id",
+    "knowledge": "knowledge-db-id"
+  },
+  "sprint": {
+    "duration_days": 14,
+    "capacity": 10
+  },
+  "deploy": {
+    "method": "github-actions",
+    "trigger": "workflow_dispatch"
+  },
+  "monitor": {
+    "interval_hours": 6,
+    "checks": [
+      { "type": "http", "url": "https://example.com/health", "expect_status": 200 }
+    ]
+  },
+  "quota": {
+    "daily_task_limit": 10,
+    "reset_hour_utc": 0,
+    "return_threshold": 3
+  }
+}

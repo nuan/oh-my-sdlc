@@ -1,0 +1,17 @@
+{
+  "object": "list",
+  "results": [{
+    "id": "task-abc-123",
+    "properties": {
+      "标题": { "title": [{ "plain_text": "实现登录功能" }] },
+      "状态": { "select": { "name": "Todo" } },
+      "类型": { "select": { "name": "Dev" } },
+      "认领人": { "rich_text": [] },
+      "退还次数": { "number": 0 },
+      "退还原因": { "rich_text": [] },
+      "完成时间": { "date": null }
+    }
+  }],
+  "next_cursor": null,
+  "has_more": false
+}
