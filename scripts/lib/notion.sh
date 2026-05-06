@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 NOTION_API="https://api.notion.com/v1"
 NOTION_VERSION="2022-06-28"
 
 load_config() {
+  if [ -z "${NOTION_TOKEN:-}" ]; then
+    echo "Error: NOTION_TOKEN environment variable not set" >&2
+    exit 1
+  fi
+
   local config_file="${1:-.sdlc/config.json}"
   if [ ! -f "$config_file" ]; then
     echo "Error: ${config_file} not found. Run init.sh first." >&2
