@@ -61,3 +61,36 @@ teardown() { teardown_test_env; }
   result=$(agent_fingerprint)
   [ -n "$result" ]
 }
+
+@test "create-requirement.sh: 缺少参数时报错" {
+  run bash scripts/create-requirement.sh
+  assert_failure
+  assert_output --partial "title"
+}
+
+@test "create-requirement.sh: 输出含 requirement_id" {
+  export MOCK_CURL_RESPONSE='{"object":"page","id":"req-new-999"}'
+  run bash scripts/create-requirement.sh "测试需求" "需求描述" "human"
+  assert_success
+  echo "$output" | jq -e '.requirement_id' > /dev/null
+}
+
+@test "get-knowledge.sh: 返回含 modules 数组的 JSON" {
+  export MOCK_CURL_RESPONSE_FILE="${FIXTURES_DIR}/empty-results.json"
+  run bash scripts/get-knowledge.sh
+  assert_success
+  echo "$output" | jq -e '.modules' > /dev/null
+}
+
+@test "upsert-knowledge.sh: 缺少参数时报错" {
+  run bash scripts/upsert-knowledge.sh
+  assert_failure
+  assert_output --partial "module_name"
+}
+
+@test "upsert-knowledge.sh: 新增场景退出成功" {
+  export MOCK_CURL_RESPONSE='{"object":"page","id":"entry-new-111","results":[]}'
+  run bash scripts/upsert-knowledge.sh "auth" "JWT 登录" "src/auth.ts" "TypeScript,Express"
+  assert_success
+  echo "$output" | jq -e '.entry_id' > /dev/null
+}
