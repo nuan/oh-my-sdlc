@@ -116,3 +116,34 @@ score_priority() {
     *)  echo 0  ;;
   esac
 }
+
+notion_create_database() {
+  local parent_page_id="$1"
+  local title="$2"
+  local properties_json="$3"
+  local payload
+  payload=$(jq -n \
+    --arg parent_id "$parent_page_id" \
+    --arg title "$title" \
+    --argjson props "$properties_json" \
+    '{parent:{type:"page_id",page_id:$parent_id},title:[{text:{content:$title}}],properties:$props}')
+  curl -s -X POST \
+    -H "Authorization: Bearer ${NOTION_TOKEN}" \
+    -H "Notion-Version: ${NOTION_VERSION}" \
+    -H "Content-Type: application/json" \
+    -d "$payload" \
+    "${NOTION_API}/databases"
+}
+
+notion_update_database() {
+  local db_id="$1"
+  local properties_json="$2"
+  local body
+  body=$(jq -n --argjson props "$properties_json" '{properties: $props}')
+  curl -s -X PATCH \
+    -H "Authorization: Bearer ${NOTION_TOKEN}" \
+    -H "Notion-Version: ${NOTION_VERSION}" \
+    -H "Content-Type: application/json" \
+    -d "$body" \
+    "${NOTION_API}/databases/${db_id}"
+}
