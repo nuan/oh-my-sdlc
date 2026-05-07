@@ -75,3 +75,54 @@ describe("return_task", () => {
     expect(result.status).toBe("todo");
   });
 });
+
+describe("create_requirement", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("calls create-requirement with title, description, source", () => {
+    mockRunScript.mockReturnValue({ requirement_id: "req-new-999" });
+    const result = handleToolCall(PROJECT_ROOT, "create_requirement", {
+      title: "新功能",
+      description: "用户可以导出报告",
+      source: "human",
+    }) as { requirement_id: string };
+    expect(mockRunScript).toHaveBeenCalledWith(PROJECT_ROOT, "create-requirement", [
+      "新功能",
+      "用户可以导出报告",
+      "human",
+    ]);
+    expect(result.requirement_id).toBe("req-new-999");
+  });
+});
+
+describe("get_project_knowledge", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("calls get-knowledge with no args and returns modules array", () => {
+    mockRunScript.mockReturnValue({ modules: [] });
+    const result = handleToolCall(PROJECT_ROOT, "get_project_knowledge", {}) as { modules: unknown[] };
+    expect(mockRunScript).toHaveBeenCalledWith(PROJECT_ROOT, "get-knowledge", []);
+    expect(Array.isArray(result.modules)).toBe(true);
+  });
+});
+
+describe("upsert_knowledge_entry", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("calls upsert-knowledge with all 4 fields", () => {
+    mockRunScript.mockReturnValue({ entry_id: "entry-aaa" });
+    const result = handleToolCall(PROJECT_ROOT, "upsert_knowledge_entry", {
+      module_name: "auth",
+      description: "JWT 认证模块",
+      key_files: "src/auth.ts",
+      tech_stack: "TypeScript,Express",
+    }) as { entry_id: string };
+    expect(mockRunScript).toHaveBeenCalledWith(PROJECT_ROOT, "upsert-knowledge", [
+      "auth",
+      "JWT 认证模块",
+      "src/auth.ts",
+      "TypeScript,Express",
+    ]);
+    expect(result.entry_id).toBe("entry-aaa");
+  });
+});
