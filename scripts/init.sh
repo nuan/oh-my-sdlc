@@ -24,7 +24,7 @@ if [ -z "${NOTION_TOKEN:-}" ]; then
   NOTION_TOKEN=$(prompt "Notion Integration Token (sk-...)")
   export NOTION_TOKEN
   PROFILE="${SHELL_PROFILE:-$HOME/.bashrc}"
-  echo "export NOTION_TOKEN='${NOTION_TOKEN}'" >> "$PROFILE"
+  printf 'export NOTION_TOKEN=%q\n' "$NOTION_TOKEN" >> "$PROFILE"
   printf "→ NOTION_TOKEN 已写入 %s\n" "$PROFILE" >&2
 else
   printf "→ 使用已有 NOTION_TOKEN\n" >&2
@@ -136,12 +136,12 @@ jq -n \
 printf "→ .sdlc/config.json\n" >&2
 
 mkdir -p "${PROJECT_ROOT}/.claude"
-printf '{"mcpServers":{"sdlc":{"command":"npx","args":["tsx","mcp/sdlc-mcp/src/index.ts","--config",".sdlc/config.json"]}}}\n' \
+jq -n '{mcpServers:{sdlc:{command:"npx",args:["tsx","mcp/sdlc-mcp/src/index.ts","--config",".sdlc/config.json"]}}}' \
   > "${PROJECT_ROOT}/.claude/mcp.json"
 printf "→ .claude/mcp.json\n" >&2
 
 mkdir -p "${PROJECT_ROOT}/.gemini"
-printf '{"mcpServers":{"sdlc":{"command":"npx","args":["tsx","mcp/sdlc-mcp/src/index.ts","--config",".sdlc/config.json"]}}}\n' \
+jq -n '{mcpServers:{sdlc:{command:"npx",args:["tsx","mcp/sdlc-mcp/src/index.ts","--config",".sdlc/config.json"]}}}' \
   > "${PROJECT_ROOT}/.gemini/mcp.json"
 printf "→ .gemini/mcp.json\n" >&2
 
