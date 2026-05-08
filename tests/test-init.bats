@@ -71,3 +71,33 @@ teardown() {
   run jq -r '.mcpServers.sdlc.command' "$TMPDIR_TEST/.gemini/mcp.json"
   assert_output "npx"
 }
+
+@test "init.sh Mode B: CLAUDE.md 包含已有项目提示" {
+  export MOCK_CURL_RESPONSE='{"id":"test-db-000","object":"database"}'
+  printf "# Existing CLAUDE.md\n" > "$TMPDIR_TEST/CLAUDE.md"
+  bash -c "printf 'test-page-id\nMyProject\n14\n10\n3\nB\n' | PROJECT_ROOT='$TMPDIR_TEST' bash scripts/init.sh"
+  run grep -c "这是已有项目" "$TMPDIR_TEST/CLAUDE.md"
+  assert_output "1"
+}
+
+@test "init.sh Mode B: GEMINI.md 包含已有项目提示" {
+  export MOCK_CURL_RESPONSE='{"id":"test-db-000","object":"database"}'
+  printf "# Existing GEMINI.md\n" > "$TMPDIR_TEST/GEMINI.md"
+  bash -c "printf 'test-page-id\nMyProject\n14\n10\n3\nB\n' | PROJECT_ROOT='$TMPDIR_TEST' bash scripts/init.sh"
+  run grep -c "这是已有项目" "$TMPDIR_TEST/GEMINI.md"
+  assert_output "1"
+}
+
+@test "init.sh Mode B: guide 文件不存在时跳过（不报错）" {
+  export MOCK_CURL_RESPONSE='{"id":"test-db-000","object":"database"}'
+  run bash -c "printf 'test-page-id\nMyProject\n14\n10\n3\nB\n' | PROJECT_ROOT='$TMPDIR_TEST' bash scripts/init.sh"
+  assert_success
+}
+
+@test "init.sh Mode A: CLAUDE.md 不添加已有项目提示" {
+  export MOCK_CURL_RESPONSE='{"id":"test-db-000","object":"database"}'
+  printf "# Existing CLAUDE.md\n" > "$TMPDIR_TEST/CLAUDE.md"
+  bash -c "printf 'test-page-id\nMyProject\n14\n10\n3\nA\n' | PROJECT_ROOT='$TMPDIR_TEST' bash scripts/init.sh"
+  run grep -c "这是已有项目" "$TMPDIR_TEST/CLAUDE.md" || true
+  assert_output "0"
+}

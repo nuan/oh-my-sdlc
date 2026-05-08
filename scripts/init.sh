@@ -145,6 +145,17 @@ jq -n '{mcpServers:{sdlc:{command:"npx",args:["tsx","mcp/sdlc-mcp/src/index.ts",
   > "${PROJECT_ROOT}/.gemini/mcp.json"
 printf "→ .gemini/mcp.json\n" >&2
 
+# ── Mode B: mark guide files as existing project ──
+if [ "$MODE" = "B" ]; then
+  MARKER=$'\n\n> **已有项目提示：** 这是已有项目，首次启动前必须先读取知识库（`get_project_knowledge()`），了解现有功能后再开始工作。\n'
+  for guide in CLAUDE.md GEMINI.md AGENTS.md; do
+    if [ -f "${PROJECT_ROOT}/${guide}" ]; then
+      printf "%s" "$MARKER" >> "${PROJECT_ROOT}/${guide}"
+      printf "→ 已标注 %s\n" "$guide" >&2
+    fi
+  done
+fi
+
 # ── Create initial data ──
 printf "\n=== 创建初始数据 ===\n" >&2
 
@@ -171,3 +182,6 @@ printf "\n下一步：\n" >&2
 printf "  1. 确认 NOTION_TOKEN 已配置（重新加载终端或运行 source ~/.bashrc）\n" >&2
 printf "  2. 在 Claude Code 中通过 .claude/mcp.json 加载 MCP Server\n" >&2
 printf "  3. 运行 scripts/get-next-work.sh 开始工作\n" >&2
+if [ "$MODE" = "B" ]; then
+  printf "\n  ⚠️  已有项目：第一个 Agent 启动时先执行 skills/bootstrap.md 扫描代码库\n" >&2
+fi
