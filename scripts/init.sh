@@ -102,6 +102,11 @@ notion_update_database "$DB_MONITOR_LOGS_ID" \
     '{"需求":{"relation":{"database_id":$id,"type":"single_property","single_property":{}}}}')" \
   > /dev/null
 
+notion_update_database "$DB_SPRINTS_ID" \
+  "$(jq -n --arg id "$DB_REQUIREMENTS_ID" \
+    '{"需求":{"relation":{"database_id":$id,"type":"single_property","single_property":{}}}}')" \
+  > /dev/null
+
 # ── Generate config files ──
 printf "\n=== 生成配置文件 ===\n" >&2
 
