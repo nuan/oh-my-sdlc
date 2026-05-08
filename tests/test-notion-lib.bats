@@ -94,3 +94,35 @@ teardown() { teardown_test_env; }
   assert_success
   echo "$output" | jq -e '.entry_id' > /dev/null
 }
+
+@test "notion_create_database: 成功时返回包含 id 的 JSON" {
+  export MOCK_CURL_RESPONSE='{"id":"new-db-abc","object":"database"}'
+  source scripts/lib/notion.sh
+  run notion_create_database "parent-page-id" "测试数据库" '{"标题":{"title":{}}}'
+  assert_success
+  assert_output --partial '"id":"new-db-abc"'
+}
+
+@test "notion_create_database: curl 失败时返回错误码" {
+  export MOCK_CURL_EXIT_CODE=1
+  export MOCK_CURL_RESPONSE='{"object":"error","status":400}'
+  source scripts/lib/notion.sh
+  run notion_create_database "parent-page-id" "DB" '{"标题":{"title":{}}}'
+  assert_failure
+}
+
+@test "notion_update_database: 成功时返回 database 对象" {
+  export MOCK_CURL_RESPONSE='{"id":"db-xyz","object":"database"}'
+  source scripts/lib/notion.sh
+  run notion_update_database "db-xyz" '{"Sprint":{"relation":{"database_id":"sprint-id","type":"single_property","single_property":{}}}}'
+  assert_success
+  assert_output --partial '"id":"db-xyz"'
+}
+
+@test "notion_update_database: curl 失败时返回错误码" {
+  export MOCK_CURL_EXIT_CODE=1
+  export MOCK_CURL_RESPONSE='{"object":"error","status":400}'
+  source scripts/lib/notion.sh
+  run notion_update_database "db-id" '{}'
+  assert_failure
+}
