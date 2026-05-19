@@ -1,0 +1,5 @@
+description = "Start the oh-my-sdlc autonomous work loop"
+prompt = """
+Read GEMINI.md, confirm the sdlc MCP server is available, then start the oh-my-sdlc loop:
+get_next_work(), claim_task() when appropriate, execute the returned skill guide, and complete_task() or return_task().
+"""

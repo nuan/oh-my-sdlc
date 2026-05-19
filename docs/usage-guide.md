@@ -58,18 +58,38 @@ jq --version
 
 ## 第二步：安装 oh-my-sdlc
 
-**选项 A：全新项目（推荐）**
+**选项 A：作为 CLI 安装（推荐）**
 
-直接克隆 oh-my-sdlc 作为项目根目录：
+把 oh-my-sdlc 安装成全局命令，然后在你的真实项目根目录初始化：
 
 ```bash
-git clone https://github.com/nuan/oh-my-sdlc.git my-project
+npm install -g oh-my-sdlc
+mkdir my-project
 cd my-project
+sdlc init
 ```
 
-**选项 B：已有项目接入**
+`sdlc init` 会先安装 SDLC 资产，再调用初始化流程创建 Notion 数据库和本地配置。
 
-将 oh-my-sdlc 内容合并到你的项目根目录：
+如果项目已经存在：
+
+```bash
+cd your-project
+sdlc init
+```
+
+只安装某个工具的配置时：
+
+```bash
+sdlc install claude
+sdlc install codex
+sdlc install gemini
+sdlc install all
+```
+
+**选项 B：手动接入（备用）**
+
+如果不想使用全局 CLI，可以将 oh-my-sdlc 内容合并到你的项目根目录：
 
 ```bash
 cd your-project
@@ -93,7 +113,13 @@ AGENTS.md
 
 ## 第三步：运行初始化脚本
 
-在**项目根目录**执行：
+使用 CLI 时，在**项目根目录**执行：
+
+```bash
+sdlc init
+```
+
+手动接入时执行：
 
 ```bash
 bash scripts/init.sh
@@ -156,7 +182,20 @@ echo $NOTION_TOKEN  # 确认非空
 
 ## 第四步：配置 AI 工具
 
+CLI 安装后，三个工具都复用同一个 MCP 命令：
+
+```bash
+sdlc-mcp --config .sdlc/config.json
+```
+
 ### Claude Code
+
+使用 CLI 写入项目级配置：
+
+```bash
+cd your-project
+sdlc install claude
+```
 
 **安装并进入项目：**
 
@@ -177,14 +216,16 @@ Claude Code 会自动读取 `.claude/mcp.json`，无需额外配置。验证 MCP
 {
   "mcpServers": {
     "sdlc": {
-      "command": "npx",
-      "args": ["tsx", "mcp/sdlc-mcp/src/index.ts", "--config", ".sdlc/config.json"]
+      "command": "sdlc-mcp",
+      "args": ["--config", ".sdlc/config.json"]
     }
   }
 }
 ```
 
-确认 node_modules 存在：
+也可以把 `plugins/claude-code` 作为 Claude Code plugin 开发/分发目录。插件内包含 `.mcp.json` 和 `sdlc-loop` skill，适合团队统一安装。
+
+如果使用手动接入方式，确认 MCP Server 的 node_modules 存在：
 
 ```bash
 cd mcp/sdlc-mcp && npm install
@@ -204,6 +245,13 @@ Claude Code 会自动进入工作循环，无需进一步指令。
 
 ### Gemini CLI
 
+使用 CLI 写入项目级配置和 extension 模板：
+
+```bash
+cd your-project
+sdlc install gemini
+```
+
 **安装 Gemini CLI：**
 
 ```bash
@@ -222,12 +270,14 @@ pip install gemini-cli
 {
   "mcpServers": {
     "sdlc": {
-      "command": "npx",
-      "args": ["tsx", "mcp/sdlc-mcp/src/index.ts", "--config", ".sdlc/config.json"]
+      "command": "sdlc-mcp",
+      "args": ["--config", ".sdlc/config.json"]
     }
   }
 }
 ```
+
+CLI 也会生成 `.gemini/extensions/oh-my-sdlc/gemini-extension.json`，用于 Gemini CLI extension 形态分发。
 
 **设置 API Key：**
 
@@ -259,27 +309,45 @@ gemini --mcp-config .gemini/mcp.json
 
 ### Codex（及其他工具）
 
-Codex 和其他不支持 `.claude/` 或 `.gemini/` 目录的工具，通过手动启动 MCP Server 接入。
+Codex 通过 `AGENTS.md` 和 MCP 配置接入。使用 CLI 时：
 
-**安装依赖：**
+```bash
+cd your-project
+sdlc install codex
+```
+
+这会写入：
+
+```text
+AGENTS.md
+.codex/config.toml
+```
+
+其中 MCP Server 配置为：
+
+```toml
+[mcp_servers.sdlc]
+command = "sdlc-mcp"
+args = ["--config", ".sdlc/config.json"]
+```
+
+**手动接入时安装依赖：**
 
 ```bash
 cd mcp/sdlc-mcp
 npm install
 ```
 
-**手动启动 MCP Server（后台运行）：**
+**手动启动 MCP Server：**
 
 ```bash
 cd your-project
-npx tsx mcp/sdlc-mcp/src/index.ts --config .sdlc/config.json &
+sdlc-mcp --config .sdlc/config.json
 ```
 
-**在 Codex 中配置 MCP 连接：**
+如果没有安装 CLI，也可以使用仓库内 MCP Server：
 
-参考你所使用工具的 MCP 接入文档，Server 启动命令为：
-
-```
+```bash
 npx tsx mcp/sdlc-mcp/src/index.ts --config .sdlc/config.json
 ```
 

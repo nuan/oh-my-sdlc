@@ -1,0 +1,7 @@
+{
+  "name": "oh-my-sdlc",
+  "description": "Run an autonomous SDLC loop backed by Notion tasks and the oh-my-sdlc MCP server.",
+  "version": "0.1.0",
+  "author": "oh-my-sdlc",
+  "homepage": "https://github.com/nuan/oh-my-sdlc"
+}

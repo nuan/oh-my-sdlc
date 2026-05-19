@@ -1,0 +1,3 @@
+[mcp_servers.sdlc]
+command = "sdlc-mcp"
+args = ["--config", ".sdlc/config.json"]

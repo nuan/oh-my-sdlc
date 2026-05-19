@@ -6,7 +6,8 @@ export function runScript(
   scriptName: string,
   args: string[]
 ): unknown {
-  const scriptPath = path.join(projectRoot, "scripts", `${scriptName}.sh`);
+  const scriptDir = process.env.SDLC_SCRIPTS_DIR || path.join(projectRoot, "scripts");
+  const scriptPath = path.join(scriptDir, `${scriptName}.sh`);
   const quotedArgs = args
     .map((a) => `'${a.replace(/'/g, "'\\''")}'`)
     .join(" ");

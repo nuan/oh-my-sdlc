@@ -1,0 +1,35 @@
+{
+  "name": "oh-my-sdlc",
+  "version": "0.1.0",
+  "description": "Agent-driven SDLC workflow for Claude Code, Codex, and Gemini CLI",
+  "type": "module",
+  "bin": {
+    "sdlc": "./bin/sdlc.js",
+    "sdlc-mcp": "./bin/sdlc-mcp.js"
+  },
+  "files": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    "bin/",
+    "mcp/sdlc-mcp/src/",
+    "mcp/sdlc-mcp/package.json",
+    "mcp/sdlc-mcp/tsconfig.json",
+    "plugins/",
+    "scripts/",
+    "skills/",
+    "docs/usage-guide.md"
+  ],
+  "scripts": {
+    "test:cli": "bash tests/test-cli.sh",
+    "test:skills": "bash tests/test-skills.sh"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "tsx": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

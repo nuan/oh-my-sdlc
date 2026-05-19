@@ -1,0 +1,12 @@
+{
+  "name": "oh-my-sdlc",
+  "version": "0.1.0",
+  "description": "Run an autonomous SDLC loop backed by Notion tasks and the oh-my-sdlc MCP server.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "sdlc": {
+      "command": "sdlc-mcp",
+      "args": ["--config", ".sdlc/config.json"]
+    }
+  }
+}
