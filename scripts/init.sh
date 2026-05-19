@@ -146,9 +146,17 @@ jq -n '{mcpServers:{sdlc:{command:"npx",args:["tsx","mcp/sdlc-mcp/src/index.ts",
 printf "→ .claude/mcp.json\n" >&2
 
 mkdir -p "${PROJECT_ROOT}/.gemini"
-jq -n '{mcpServers:{sdlc:{command:"npx",args:["tsx","mcp/sdlc-mcp/src/index.ts","--config",".sdlc/config.json"]}}}' \
-  > "${PROJECT_ROOT}/.gemini/mcp.json"
-printf "→ .gemini/mcp.json\n" >&2
+GEMINI_SETTINGS="${PROJECT_ROOT}/.gemini/settings.json"
+if [ -f "$GEMINI_SETTINGS" ]; then
+  tmp_settings="$(mktemp)"
+  jq '.mcpServers = ((.mcpServers // {}) + {sdlc:{command:"sdlc-mcp",args:["--config",".sdlc/config.json"]}})' \
+    "$GEMINI_SETTINGS" > "$tmp_settings"
+  mv "$tmp_settings" "$GEMINI_SETTINGS"
+else
+  jq -n '{mcpServers:{sdlc:{command:"sdlc-mcp",args:["--config",".sdlc/config.json"]}}}' \
+    > "$GEMINI_SETTINGS"
+fi
+printf "→ .gemini/settings.json\n" >&2
 
 # ── Mode B: mark guide files as existing project ──
 if [ "$MODE" = "B" ]; then

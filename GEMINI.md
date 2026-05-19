@@ -9,16 +9,16 @@
 ## 前提条件
 
 - 环境变量 `NOTION_TOKEN` 已设置（`echo $NOTION_TOKEN` 不为空）
-- sdlc MCP Server 已通过 `.gemini/mcp.json` 加载（工具列表中可见 `get_next_work`）
+- sdlc MCP Server 已通过 `.gemini/settings.json` 加载（工具列表中可见 `get_next_work`）
 
-`.gemini/mcp.json` 配置示例：
+`.gemini/settings.json` 配置示例：
 
 ```json
 {
   "mcpServers": {
     "sdlc": {
-      "command": "npx",
-      "args": ["tsx", "mcp/sdlc-mcp/src/index.ts", "--config", ".sdlc/config.json"]
+      "command": "sdlc-mcp",
+      "args": ["--config", ".sdlc/config.json"]
     }
   }
 }

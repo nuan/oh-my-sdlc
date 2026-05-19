@@ -88,6 +88,31 @@ function writeJson(file, value) {
   writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function readJsonObject(file) {
+  if (!existsSync(file)) return {};
+  const parsed = JSON.parse(readFileSync(file, "utf8"));
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`${file} must contain a JSON object`);
+  }
+  return parsed;
+}
+
+function upsertGeminiSettings(project) {
+  const settingsFile = path.join(project, ".gemini", "settings.json");
+  const settings = readJsonObject(settingsFile);
+  const mcpServers =
+    settings.mcpServers && typeof settings.mcpServers === "object" && !Array.isArray(settings.mcpServers)
+      ? settings.mcpServers
+      : {};
+
+  settings.mcpServers = {
+    ...mcpServers,
+    sdlc: mcpConfigForProject().mcpServers.sdlc,
+  };
+
+  writeJson(settingsFile, settings);
+}
+
 function appendCodexMcpConfig(project) {
   const configDir = path.join(project, ".codex");
   const configFile = path.join(configDir, "config.toml");
@@ -107,7 +132,7 @@ async function installTool(project, tool) {
     writeJson(path.join(project, ".claude", "mcp.json"), mcpConfigForProject());
   }
   if (tool === "gemini" || tool === "all") {
-    writeJson(path.join(project, ".gemini", "mcp.json"), mcpConfigForProject());
+    upsertGeminiSettings(project);
     writeJson(path.join(project, ".gemini", "extensions", "oh-my-sdlc", "gemini-extension.json"), geminiExtensionConfig());
   }
   if (tool === "codex" || tool === "all") {
@@ -145,7 +170,7 @@ function doctor(project) {
     ["AGENTS.md", path.join(project, "AGENTS.md"), existsSync(path.join(project, "AGENTS.md"))],
     [".sdlc/config.json", path.join(project, ".sdlc", "config.json"), existsSync(path.join(project, ".sdlc", "config.json"))],
     [".claude/mcp.json", path.join(project, ".claude", "mcp.json"), existsSync(path.join(project, ".claude", "mcp.json"))],
-    [".gemini/mcp.json", path.join(project, ".gemini", "mcp.json"), existsSync(path.join(project, ".gemini", "mcp.json"))],
+    [".gemini/settings.json", path.join(project, ".gemini", "settings.json"), existsSync(path.join(project, ".gemini", "settings.json"))],
     [".codex/config.toml", path.join(project, ".codex", "config.toml"), existsSync(path.join(project, ".codex", "config.toml"))],
   ];
 

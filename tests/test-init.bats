@@ -64,12 +64,32 @@ teardown() {
   assert_output "npx"
 }
 
-@test "init.sh Mode A: 生成 .gemini/mcp.json" {
+@test "init.sh Mode A: 生成 .gemini/settings.json" {
   export MOCK_CURL_RESPONSE='{"id":"test-db-000","object":"database"}'
   bash -c "printf 'test-page-id\nMyProject\n14\n10\n3\nA\n' | PROJECT_ROOT='$TMPDIR_TEST' bash scripts/init.sh"
-  [ -f "$TMPDIR_TEST/.gemini/mcp.json" ]
-  run jq -r '.mcpServers.sdlc.command' "$TMPDIR_TEST/.gemini/mcp.json"
-  assert_output "npx"
+  [ -f "$TMPDIR_TEST/.gemini/settings.json" ]
+  run jq -r '.mcpServers.sdlc.command' "$TMPDIR_TEST/.gemini/settings.json"
+  assert_output "sdlc-mcp"
+}
+
+@test "init.sh Mode A: 保留已有 Gemini settings 和 MCP" {
+  export MOCK_CURL_RESPONSE='{"id":"test-db-000","object":"database"}'
+  mkdir -p "$TMPDIR_TEST/.gemini"
+  cat > "$TMPDIR_TEST/.gemini/settings.json" <<'JSON'
+{
+  "ui": {"theme": "GitHub"},
+  "mcpServers": {
+    "existing": {"command": "existing-mcp"}
+  }
+}
+JSON
+  bash -c "printf 'test-page-id\nMyProject\n14\n10\n3\nA\n' | PROJECT_ROOT='$TMPDIR_TEST' bash scripts/init.sh"
+  run jq -r '.mcpServers.existing.command' "$TMPDIR_TEST/.gemini/settings.json"
+  assert_output "existing-mcp"
+  run jq -r '.mcpServers.sdlc.command' "$TMPDIR_TEST/.gemini/settings.json"
+  assert_output "sdlc-mcp"
+  run jq -r '.ui.theme' "$TMPDIR_TEST/.gemini/settings.json"
+  assert_output "GitHub"
 }
 
 @test "init.sh Mode B: CLAUDE.md 包含已有项目提示" {

@@ -166,7 +166,7 @@ Workflow 文件路径 [.github/workflows/deploy.yml]:
 |---|---|
 | `.sdlc/config.json` | 项目配置（数据库 ID、Sprint 设置等），**提交到 git** |
 | `.claude/mcp.json` | Claude Code MCP 配置 |
-| `.gemini/mcp.json` | Gemini CLI MCP 配置 |
+| `.gemini/settings.json` | Gemini CLI 项目级 MCP 配置 |
 | Notion 中 | 6 张数据库 + Sprint-001 + heartbeat 记录 |
 
 > **已有项目（模式 B）**：初始化完成后，第一次启动 Agent 时会自动执行 `skills/bootstrap.md`，扫描现有代码库并写入 Notion 知识库。
@@ -245,12 +245,14 @@ Claude Code 会自动进入工作循环，无需进一步指令。
 
 ### Gemini CLI
 
-使用 CLI 写入项目级配置和 extension 模板：
+使用 CLI 合并写入项目级配置和 extension 模板：
 
 ```bash
 cd your-project
 sdlc install gemini
 ```
+
+`sdlc install gemini` 会更新 `.gemini/settings.json` 的 `mcpServers.sdlc`，并保留已有的其他 Gemini 设置和 MCP Server。
 
 **安装 Gemini CLI：**
 
@@ -262,7 +264,7 @@ pip install gemini-cli
 
 **配置 MCP：**
 
-`.gemini/mcp.json` 已由 `init.sh` 生成，Gemini CLI 会自动读取。
+`.gemini/settings.json` 已由 `sdlc init` 或 `sdlc install gemini` 生成，Gemini CLI 会自动读取。
 
 验证格式：
 
@@ -278,6 +280,13 @@ pip install gemini-cli
 ```
 
 CLI 也会生成 `.gemini/extensions/oh-my-sdlc/gemini-extension.json`，用于 Gemini CLI extension 形态分发。
+
+也可以使用 Gemini CLI 官方 MCP 命令手动安装到项目配置：
+
+```bash
+gemini mcp add -s project sdlc sdlc-mcp -- --config .sdlc/config.json
+gemini mcp list
+```
 
 **设置 API Key：**
 
@@ -299,10 +308,10 @@ Gemini CLI 会读取当前目录的 `GEMINI.md` 作为上下文。首次启动�
 请阅读 GEMINI.md，然后开始工作。
 ```
 
-**如果 MCP 未自动加载，手动指定：**
+**检查 MCP 是否已加载：**
 
 ```bash
-gemini --mcp-config .gemini/mcp.json
+gemini mcp list
 ```
 
 ---
