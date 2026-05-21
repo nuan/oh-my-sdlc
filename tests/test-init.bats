@@ -6,6 +6,7 @@ load '../tests/bats-assert/load'
 
 setup() {
   setup_test_env
+  export SDLC_SKIP_ANTIGRAVITY_PLUGIN_INSTALL=1
   TMPDIR_TEST=$(mktemp -d)
   export TMPDIR_TEST
 }
@@ -90,6 +91,19 @@ JSON
   assert_output "sdlc-mcp"
   run jq -r '.ui.theme' "$TMPDIR_TEST/.gemini/settings.json"
   assert_output "GitHub"
+}
+
+@test "init.sh Mode A: 生成 Antigravity CLI plugin MCP 配置" {
+  export MOCK_CURL_RESPONSE='{"id":"test-db-000","object":"database"}'
+  bash -c "printf 'test-page-id\nMyProject\n14\n10\n3\nA\n' | PROJECT_ROOT='$TMPDIR_TEST' bash scripts/init.sh"
+  [ -f "$TMPDIR_TEST/plugins/antigravity-cli/plugin.json" ]
+  [ -f "$TMPDIR_TEST/plugins/antigravity-cli/mcp_config.json" ]
+  run jq -r '.mcpServers.sdlc.command' "$TMPDIR_TEST/plugins/antigravity-cli/mcp_config.json"
+  assert_output "sdlc-mcp"
+  run jq -r '.mcpServers.sdlc.args[1]' "$TMPDIR_TEST/plugins/antigravity-cli/mcp_config.json"
+  assert_output "$TMPDIR_TEST/.sdlc/config.json"
+  run jq -r '.mcpServers.sdlc.cwd' "$TMPDIR_TEST/plugins/antigravity-cli/mcp_config.json"
+  assert_output "$TMPDIR_TEST"
 }
 
 @test "init.sh Mode B: CLAUDE.md 包含已有项目提示" {

@@ -11,7 +11,8 @@
 
 如果 MCP 未加载：
 - Claude Code 用户：检查 `.claude/mcp.json`，重启会话后重试
-- Gemini CLI 用户：检查 `.gemini/mcp.json`，重启会话后重试
+- Antigravity CLI 用户：检查 `plugins/antigravity-cli/mcp_config.json` 并运行 `agy plugin install ./plugins/antigravity-cli`
+- Gemini CLI 用户：检查 `.gemini/settings.json`，重启会话后重试
 - 其他工具：参考 `AGENTS.md` 中的 MCP Server 启动命令
 
 ## 2. 已有项目：读取知识库（不可跳过）

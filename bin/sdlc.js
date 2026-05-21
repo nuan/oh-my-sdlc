@@ -14,7 +14,7 @@ function usage() {
 
 Usage:
   sdlc init [--project <dir>]
-  sdlc install [claude|codex|gemini|all] [--project <dir>]
+  sdlc install [claude|codex|gemini|antigravity|all] [--project <dir>]
   sdlc mcp --config <path>
   sdlc doctor [--project <dir>]
 `);
@@ -66,6 +66,37 @@ function geminiExtensionConfig() {
     mcpServers: mcpConfigForProject().mcpServers,
     contextFileName: "GEMINI.md",
   };
+}
+
+function antigravityMcpConfig(project) {
+  return {
+    mcpServers: {
+      sdlc: {
+        command: "sdlc-mcp",
+        args: ["--config", path.join(project, ".sdlc", "config.json")],
+        cwd: project,
+      },
+    },
+  };
+}
+
+function installAntigravityCliPlugin(project) {
+  if (process.env.SDLC_SKIP_ANTIGRAVITY_PLUGIN_INSTALL === "1") return;
+
+  const pluginDir = path.join(project, "plugins", "antigravity-cli");
+  const result = spawnSync("agy", ["plugin", "install", pluginDir], {
+    cwd: project,
+    env: process.env,
+    stdio: "inherit",
+  });
+
+  if (result.error?.code === "ENOENT") {
+    console.warn(`Antigravity CLI not found; run "agy plugin install ${pluginDir}" after installing agy.`);
+    return;
+  }
+  if ((result.status ?? 1) !== 0) {
+    throw new Error(`Failed to install Antigravity CLI plugin from ${pluginDir}`);
+  }
 }
 
 async function copyIfExists(src, dest) {
@@ -135,6 +166,11 @@ async function installTool(project, tool) {
     upsertGeminiSettings(project);
     writeJson(path.join(project, ".gemini", "extensions", "oh-my-sdlc", "gemini-extension.json"), geminiExtensionConfig());
   }
+  if (tool === "antigravity" || tool === "all") {
+    writeJson(path.join(project, "plugins", "antigravity-cli", "plugin.json"), { name: "oh-my-sdlc" });
+    writeJson(path.join(project, "plugins", "antigravity-cli", "mcp_config.json"), antigravityMcpConfig(project));
+    installAntigravityCliPlugin(project);
+  }
   if (tool === "codex" || tool === "all") {
     appendCodexMcpConfig(project);
   }
@@ -171,6 +207,7 @@ function doctor(project) {
     [".sdlc/config.json", path.join(project, ".sdlc", "config.json"), existsSync(path.join(project, ".sdlc", "config.json"))],
     [".claude/mcp.json", path.join(project, ".claude", "mcp.json"), existsSync(path.join(project, ".claude", "mcp.json"))],
     [".gemini/settings.json", path.join(project, ".gemini", "settings.json"), existsSync(path.join(project, ".gemini", "settings.json"))],
+    ["plugins/antigravity-cli/mcp_config.json", path.join(project, "plugins", "antigravity-cli", "mcp_config.json"), existsSync(path.join(project, "plugins", "antigravity-cli", "mcp_config.json"))],
     [".codex/config.toml", path.join(project, ".codex", "config.toml"), existsSync(path.join(project, ".codex", "config.toml"))],
   ];
 
@@ -185,7 +222,7 @@ try {
     usage();
   } else if (command === "install") {
     const tool = rest[0] ?? "all";
-    if (!["claude", "codex", "gemini", "all"].includes(tool)) throw new Error(`Unknown tool: ${tool}`);
+    if (!["claude", "codex", "gemini", "antigravity", "all"].includes(tool)) throw new Error(`Unknown tool: ${tool}`);
     await installTool(project, tool);
     console.log(`Installed oh-my-sdlc for ${tool} in ${project}`);
   } else if (command === "init") {

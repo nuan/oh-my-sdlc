@@ -158,6 +158,22 @@ else
 fi
 printf "→ .gemini/settings.json\n" >&2
 
+mkdir -p "${PROJECT_ROOT}/plugins/antigravity-cli"
+jq -n '{name:"oh-my-sdlc"}' > "${PROJECT_ROOT}/plugins/antigravity-cli/plugin.json"
+jq -n --arg project "$PROJECT_ROOT" \
+  '{mcpServers:{sdlc:{command:"sdlc-mcp",args:["--config",($project + "/.sdlc/config.json")],cwd:$project}}}' \
+  > "${PROJECT_ROOT}/plugins/antigravity-cli/mcp_config.json"
+printf "→ plugins/antigravity-cli/mcp_config.json\n" >&2
+
+if [ "${SDLC_SKIP_ANTIGRAVITY_PLUGIN_INSTALL:-}" = "1" ]; then
+  printf "→ Antigravity CLI plugin 安装已跳过\n" >&2
+elif command -v agy >/dev/null 2>&1; then
+  agy plugin install "${PROJECT_ROOT}/plugins/antigravity-cli"
+  printf "→ Antigravity CLI plugin 已安装\n" >&2
+else
+  printf "→ 未找到 agy；安装 Antigravity CLI 后运行：agy plugin install %s/plugins/antigravity-cli\n" "$PROJECT_ROOT" >&2
+fi
+
 # ── Mode B: mark guide files as existing project ──
 if [ "$MODE" = "B" ]; then
   MARKER=$'\n\n> **已有项目提示：** 这是已有项目，首次启动前必须先读取知识库（`get_project_knowledge()`），了解现有功能后再开始工作。\n'

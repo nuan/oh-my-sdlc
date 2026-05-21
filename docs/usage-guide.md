@@ -1,6 +1,6 @@
 # oh-my-sdlc 使用指南
 
-本指南覆盖三种 AI 工具的完整接入流程：Claude Code、Gemini CLI、Codex（及其他工具）。
+本指南覆盖 AI 工具的完整接入流程：Claude Code、Antigravity CLI、Codex、Gemini CLI（兼容）。
 
 ---
 
@@ -12,7 +12,8 @@
 4. [第三步：运行初始化脚本](#第三步运行初始化脚本)
 5. [第四步：配置 AI 工具](#第四步配置-ai-工具)
    - [Claude Code](#claude-code)
-   - [Gemini CLI](#gemini-cli)
+   - [Antigravity CLI](#antigravity-cli)
+   - [Gemini CLI（兼容）](#gemini-cli兼容)
    - [Codex（及其他工具）](#codex及其他工具)
 6. [日常工作流：提交需求](#日常工作流提交需求)
 7. [多 Agent 并发](#多-agent-并发)
@@ -83,6 +84,7 @@ sdlc init
 ```bash
 sdlc install claude
 sdlc install codex
+sdlc install antigravity
 sdlc install gemini
 sdlc install all
 ```
@@ -166,6 +168,7 @@ Workflow 文件路径 [.github/workflows/deploy.yml]:
 |---|---|
 | `.sdlc/config.json` | 项目配置（数据库 ID、Sprint 设置等），**提交到 git** |
 | `.claude/mcp.json` | Claude Code MCP 配置 |
+| `plugins/antigravity-cli/mcp_config.json` | Antigravity CLI plugin MCP 配置 |
 | `.gemini/settings.json` | Gemini CLI 项目级 MCP 配置 |
 | Notion 中 | 6 张数据库 + Sprint-001 + heartbeat 记录 |
 
@@ -243,7 +246,62 @@ Claude Code 会自动进入工作循环，无需进一步指令。
 
 ---
 
-### Gemini CLI
+### Antigravity CLI
+
+使用 CLI 生成 Antigravity plugin 模板：
+
+```bash
+cd your-project
+sdlc install antigravity
+```
+
+这会写入配置并自动执行 `agy plugin install ./plugins/antigravity-cli`。如果当前机器没有安装 `agy`，命令会保留项目内配置并提示你稍后手动安装。
+
+写入的项目文件：
+
+```text
+plugins/antigravity-cli/plugin.json
+plugins/antigravity-cli/mcp_config.json
+plugins/antigravity-cli/rules/oh-my-sdlc.md
+```
+
+`mcp_config.json` 使用项目绝对路径，适合被 Antigravity CLI 安装到全局 plugin 目录后继续访问当前项目：
+
+```json
+{
+  "mcpServers": {
+    "sdlc": {
+      "command": "sdlc-mcp",
+      "args": ["--config", "/absolute/path/to/your-project/.sdlc/config.json"],
+      "cwd": "/absolute/path/to/your-project"
+    }
+  }
+}
+```
+
+通常不需要额外步骤。需要手动重装 plugin 时再运行：
+
+```bash
+agy plugin install ./plugins/antigravity-cli
+agy plugin list
+```
+
+进入项目启动：
+
+```bash
+cd your-project
+agy
+```
+
+首次启动输入：
+
+```text
+请按 oh-my-sdlc 规则开始工作。
+```
+
+Antigravity Editor 的 MCP 配置文件位于 `~/.gemini/antigravity/mcp_config.json`。如果使用 Editor 而不是 CLI，可将 `plugins/antigravity-cli/mcp_config.json` 中的 `mcpServers.sdlc` 合并到该文件。
+
+### Gemini CLI（兼容）
 
 使用 CLI 合并写入项目级配置和 extension 模板：
 
@@ -396,7 +454,7 @@ oh-my-sdlc 内置乐观锁，多个 Agent 可以同时运行，互不冲突：
 claude  # 启动第一个 Claude Code Agent
 
 # 终端 2
-claude  # 启动第二个 Claude Code Agent（或 gemini）
+agy     # 启动 Antigravity CLI Agent（也可以是 claude/gemini）
 ```
 
 两个 Agent 会自动协调任务抢占，不会重复执行同一任务。
