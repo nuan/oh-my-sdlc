@@ -29,5 +29,6 @@
     "daily_task_limit": 10,
     "reset_hour_utc": 0,
     "return_threshold": 3
-  }
+  },
+  "sprint_branches": {}
 }

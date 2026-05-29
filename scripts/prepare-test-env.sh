@@ -5,11 +5,21 @@ set -e
 source "$(dirname "$0")/lib/notion.sh"
 
 PROJECT_DIR="${1:-.}"
-BRANCH_NAME="${2}"
+SPRINT_OR_BRANCH="${2}"
 
-if [ -z "$BRANCH_NAME" ]; then
-    echo "Usage: $0 <project-dir> <branch-name>"
+if [ -z "$SPRINT_OR_BRANCH" ]; then
+    echo "Usage: $0 <project-dir> <branch-name-or-sprint-id>"
     exit 1
+fi
+
+CONFIG_FILE="$PROJECT_DIR/.sdlc/config.json"
+BRANCH_NAME="$SPRINT_OR_BRANCH"
+if [ -f "$CONFIG_FILE" ]; then
+    MAPPED_BRANCH=$(jq -r --arg key "$SPRINT_OR_BRANCH" '.sprint_branches[$key] // empty' "$CONFIG_FILE")
+    if [ -n "$MAPPED_BRANCH" ]; then
+        BRANCH_NAME="$MAPPED_BRANCH"
+        echo "Resolved Sprint ID '$SPRINT_OR_BRANCH' to branch '$BRANCH_NAME'"
+    fi
 fi
 
 echo "--- Preparing Test Environment ---"
