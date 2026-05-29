@@ -103,7 +103,14 @@ function installAntigravityCliPlugin(project) {
 async function copyIfExists(src, dest) {
   if (!existsSync(src)) return;
   if (path.resolve(src) === path.resolve(dest)) return;
-  await cp(src, dest, { recursive: true, force: true });
+  await cp(src, dest, { 
+    recursive: true, 
+    force: true,
+    filter: (source) => {
+      const basename = path.basename(source);
+      return basename !== "node_modules" && basename !== "dist";
+    }
+  });
 }
 
 async function installAssets(project) {

@@ -60,6 +60,8 @@ load_config() {
   DB_DEPLOYMENTS=$(jq -r '.databases.deployments' "$config_file")
   DB_MONITOR_LOGS=$(jq -r '.databases.monitor_logs' "$config_file")
   DB_KNOWLEDGE=$(jq -r '.databases.knowledge' "$config_file")
+  DB_BUGS=$(jq -r '.databases.bugs // ""' "$config_file")
+  DB_TEST_REPORTS=$(jq -r '.databases.test_reports // ""' "$config_file")
   SPRINT_DURATION=$(jq -r '.sprint.duration_days' "$config_file")
   SPRINT_CAPACITY=$(jq -r '.sprint.capacity' "$config_file")
   DAILY_TASK_LIMIT=$(jq -r '.quota.daily_task_limit' "$config_file")
@@ -67,8 +69,23 @@ load_config() {
   RETURN_THRESHOLD=$(jq -r '.quota.return_threshold // 3' "$config_file")
 
   export DB_REQUIREMENTS DB_SPRINTS DB_TASKS DB_DEPLOYMENTS \
-         DB_MONITOR_LOGS DB_KNOWLEDGE SPRINT_DURATION SPRINT_CAPACITY \
+         DB_MONITOR_LOGS DB_KNOWLEDGE DB_BUGS DB_TEST_REPORTS \
+         SPRINT_DURATION SPRINT_CAPACITY \
          DAILY_TASK_LIMIT MONITOR_INTERVAL RETURN_THRESHOLD
+}
+
+notion_database_exists() {
+  local db_id="$1"
+  if [ -z "$db_id" ]; then return 1; fi
+  local response
+  response=$(curl -s -X GET \
+    -H "Authorization: Bearer ${NOTION_TOKEN}" \
+    -H "Notion-Version: ${NOTION_VERSION}" \
+    "${NOTION_API}/databases/${db_id}")
+  if echo "$response" | jq -e '.object == "database" and .archived == false' >/dev/null 2>&1; then
+    return 0
+  fi
+  return 1
 }
 
 notion_query_db() {

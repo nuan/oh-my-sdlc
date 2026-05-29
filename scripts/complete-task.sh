@@ -67,27 +67,52 @@ else
 fi
 
 task=$(notion_get_page "$TASK_ID")
+task_type=$(echo "$task" | jq -r '.properties["类型"].select.name // ""')
 sprint_relation=$(echo "$task" | jq -r '.properties["Sprint"].relation[0].id // ""')
 
 if [ -n "$sprint_relation" ]; then
-  remaining_filter=$(jq -n '{and: [
-    {property: "状态", select: {does_not_equal: "Done"}},
-    {property: "状态", select: {does_not_equal: "Failed"}},
-    {property: "类型", select: {equals: "Dev"}}
-  ]}')
-  remaining=$(notion_query_db "$DB_TASKS" "$remaining_filter")
-  remaining_count=$(echo "$remaining" | jq '.results | length')
+  if [ "$task_type" = "Dev" ]; then
+    # Dev 任务全部完成 → 创建 Test 任务
+    remaining_filter=$(jq -n '{and: [
+      {property: "状态", select: {does_not_equal: "Done"}},
+      {property: "状态", select: {does_not_equal: "Failed"}},
+      {property: "类型", select: {equals: "Dev"}}
+    ]}')
+    remaining=$(notion_query_db "$DB_TASKS" "$remaining_filter")
+    remaining_count=$(echo "$remaining" | jq '.results | length')
 
-  if [ "$remaining_count" -eq 0 ]; then
-    notion_update_page "$sprint_relation" \
-      "$(jq -n '{"状态": {select: {name: "Completed"}}}')" > /dev/null
-    notion_create_page "$DB_TASKS" "$(jq -n \
-      '{
-        "标题": {title: [{text: {content: "Sprint 规划"}}]},
-        "类型": {select: {name: "SprintPlan"}},
-        "状态": {select: {name: "Todo"}}
-      }')" > /dev/null
-    sprint_plan_triggered=true
+    if [ "$remaining_count" -eq 0 ]; then
+      notion_create_page "$DB_TASKS" "$(jq -n \
+        --arg sid "$sprint_relation" \
+        '{
+          "标题": {title: [{text: {content: "Sprint QA 测试"}}]},
+          "类型": {select: {name: "Test"}},
+          "状态": {select: {name: "Todo"}},
+          "Sprint": {relation: [{id: $sid}]}
+        }')" > /dev/null
+      sprint_plan_triggered=true
+    fi
+  elif [ "$task_type" = "Test" ]; then
+    # Test 任务全部完成 → Sprint 置 Completed，触发 SprintPlan
+    remaining_filter=$(jq -n '{and: [
+      {property: "状态", select: {does_not_equal: "Done"}},
+      {property: "状态", select: {does_not_equal: "Failed"}},
+      {property: "类型", select: {equals: "Test"}}
+    ]}')
+    remaining=$(notion_query_db "$DB_TASKS" "$remaining_filter")
+    remaining_count=$(echo "$remaining" | jq '.results | length')
+
+    if [ "$remaining_count" -eq 0 ]; then
+      notion_update_page "$sprint_relation" \
+        "$(jq -n '{"状态": {select: {name: "Completed"}}}')" > /dev/null
+      notion_create_page "$DB_TASKS" "$(jq -n \
+        '{
+          "标题": {title: [{text: {content: "Sprint 规划"}}]},
+          "类型": {select: {name: "SprintPlan"}},
+          "状态": {select: {name: "Todo"}}
+        }')" > /dev/null
+      sprint_plan_triggered=true
+    fi
   fi
 fi
 

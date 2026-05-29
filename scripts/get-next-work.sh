@@ -72,6 +72,19 @@ if [ "$sprint_count" -gt 0 ]; then
       task_title=$(echo "$task_result" | jq -r '.results[0].properties["标题"].title[0].plain_text // ""')
       result "DEVELOP" "$task_id" "$task_title" "develop"
     fi
+
+    # Dev 全部完成后，检查 Test 任务
+    test_filter=$(jq -n '{and: [
+      {property: "状态", select: {equals: "Todo"}},
+      {property: "类型", select: {equals: "Test"}}
+    ]}')
+    test_result=$(notion_query_db "$DB_TASKS" "$test_filter")
+    test_count=$(echo "$test_result" | jq '.results | length')
+    if [ "$test_count" -gt 0 ]; then
+      test_id=$(echo "$test_result" | jq -r '.results[0].id')
+      test_title=$(echo "$test_result" | jq -r '.results[0].properties["标题"].title[0].plain_text // ""')
+      result "TEST" "$test_id" "$test_title" "test"
+    fi
   fi
 
   if [ "$NOW_EPOCH" -ge "$sprint_end_epoch" ]; then

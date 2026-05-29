@@ -42,6 +42,7 @@
 | bootstrap    | skills/bootstrap.md    | 首次接入  |
 | requirements | skills/requirements.md | REFINE  |
 | develop      | skills/develop.md      | DEVELOP |
+| test         | skills/test.md         | TEST    |
 | deploy       | skills/deploy.md       | DEPLOY  |
 | monitor      | skills/monitor.md      | MONITOR |
 
@@ -49,3 +50,17 @@
 
 - 项目配置：`.sdlc/config.json`
 - Notion Token：环境变量 `NOTION_TOKEN`（不存入任何文件）
+
+
+> **已有项目提示：** 这是已有项目，首次启动前必须先读取知识库（`get_project_knowledge()`），了解现有功能后再开始工作。
+
+## ⚠️ 关于 SDLC 的工作范围限制
+
+当你处理与 oh-my-sdlc 相关的工具调用（如 `get_next_work`）或遇到脚本报错时，**严禁自行切换到 `oh-my-sdlc` 的源码目录或其他非当前项目的工作区**试图修复。所有与当前开发任务相关的业务代码或配置文件，都应当且只能在**当前被启动的项目目录**中完成。
+（注：你依然可以为了完成常规开发任务而自由访问操作系统的全局依赖目录或临时缓存目录，如 `/tmp` 等。）
+
+
+> **已有项目提示：** 这是已有项目，首次启动前必须先读取知识库（`get_project_knowledge()`），了解现有功能后再开始工作。
+
+
+> **已有项目提示：** 这是已有项目，首次启动前必须先读取知识库（`get_project_knowledge()`），了解现有功能后再开始工作。

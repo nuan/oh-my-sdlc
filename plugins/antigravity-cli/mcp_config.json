@@ -4,8 +4,9 @@
       "command": "sdlc-mcp",
       "args": [
         "--config",
-        ".sdlc/config.json"
-      ]
+        "/home/nuan/project/oh-my-sdlc/.sdlc/config.json"
+      ],
+      "cwd": "/home/nuan/project/oh-my-sdlc"
     }
   }
 }
