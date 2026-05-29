@@ -182,6 +182,18 @@ function createServer(projectRoot: string): Server {
           required: ["title", "description", "category"],
         },
       },
+      {
+        name: "prepare_test_env",
+        description: "准备测试环境并将相关项目切换到特定的分支",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project_dir: { type: "string", description: "项目目录，默认为." },
+            branch_name: { type: "string", description: "Sprint ID 或分支名称" },
+          },
+          required: ["branch_name"],
+        },
+      },
     ],
   }));
 
