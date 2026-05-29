@@ -102,6 +102,7 @@ function installAntigravityCliPlugin(project) {
 
 async function copyIfExists(src, dest) {
   if (!existsSync(src)) return;
+  if (path.resolve(src) === path.resolve(dest)) return;
   await cp(src, dest, { recursive: true, force: true });
 }
 
@@ -111,7 +112,7 @@ async function installAssets(project) {
     await copyIfExists(path.join(packageRoot, dir), path.join(project, dir));
   }
   for (const file of ["AGENTS.md", "CLAUDE.md", "GEMINI.md"]) {
-    await copyFile(path.join(packageRoot, file), path.join(project, file));
+    await copyIfExists(path.join(packageRoot, file), path.join(project, file));
   }
   // Copy upstream feedback config (isolated from project config.json)
   const upstreamSrc = path.join(packageRoot, ".sdlc", "upstream.json");
