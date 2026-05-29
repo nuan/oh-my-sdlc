@@ -18,7 +18,8 @@
     "plugins/",
     "scripts/",
     "skills/",
-    "docs/usage-guide.md"
+    "docs/usage-guide.md",
+    ".sdlc/upstream.json"
   ],
   "scripts": {
     "test:cli": "bash tests/test-cli.sh",

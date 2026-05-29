@@ -15,6 +15,7 @@ function usage() {
 Usage:
   sdlc init [--project <dir>]
   sdlc install [claude|codex|gemini|antigravity|all] [--project <dir>]
+  sdlc start [claude|gemini|antigravity] [--project <dir>]
   sdlc mcp --config <path>
   sdlc doctor [--project <dir>]
 `);
@@ -112,6 +113,11 @@ async function installAssets(project) {
   for (const file of ["AGENTS.md", "CLAUDE.md", "GEMINI.md"]) {
     await copyFile(path.join(packageRoot, file), path.join(project, file));
   }
+  // Copy upstream feedback config (isolated from project config.json)
+  const upstreamSrc = path.join(packageRoot, ".sdlc", "upstream.json");
+  const upstreamDest = path.join(project, ".sdlc", "upstream.json");
+  mkdirSync(path.join(project, ".sdlc"), { recursive: true });
+  await copyIfExists(upstreamSrc, upstreamDest);
 }
 
 function writeJson(file, value) {
@@ -230,6 +236,17 @@ try {
     runInit(project);
   } else if (command === "mcp") {
     runMcp(rest);
+  } else if (command === "start") {
+    const tool = rest[0];
+    if (tool === "claude") {
+      spawnSync("claude", ["-p", "请阅读 CLAUDE.md，然后开始工作并持续自动执行直到没有任务。"], { cwd: project, stdio: "inherit" });
+    } else if (tool === "antigravity" || tool === "agy") {
+      spawnSync("agy", ["-i", "请按 oh-my-sdlc 规则开始工作并持续自动执行直到没有任务。"], { cwd: project, stdio: "inherit" });
+    } else if (tool === "gemini") {
+      spawnSync("gemini", ["--prompt-interactive", "请阅读 GEMINI.md，然后开始工作并持续自动执行直到没有任务。"], { cwd: project, stdio: "inherit" });
+    } else {
+      console.log("Usage: sdlc start [claude|antigravity|gemini]");
+    }
   } else if (command === "doctor") {
     doctor(project);
   } else {

@@ -126,3 +126,29 @@ describe("upsert_knowledge_entry", () => {
     expect(result.entry_id).toBe("entry-aaa");
   });
 });
+
+describe("submit_feedback", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("calls submit-feedback with title, description, category", () => {
+    mockRunScript.mockReturnValue({ feedback_id: "fb-123", source_project: "my-app" });
+    const result = handleToolCall(PROJECT_ROOT, "submit_feedback", {
+      title: "Sprint 规划应支持手动选择需求",
+      description: "目前 sprint-plan.sh 只按优先级自动选入，建议支持手动指定需求列表",
+      category: "feature",
+    }) as { feedback_id: string; source_project: string };
+    expect(mockRunScript).toHaveBeenCalledWith(PROJECT_ROOT, "submit-feedback", [
+      "Sprint 规划应支持手动选择需求",
+      "目前 sprint-plan.sh 只按优先级自动选入，建议支持手动指定需求列表",
+      "feature",
+    ]);
+    expect(result.feedback_id).toBe("fb-123");
+    expect(result.source_project).toBe("my-app");
+  });
+
+  it("throws when required fields are missing", () => {
+    expect(() => handleToolCall(PROJECT_ROOT, "submit_feedback", {
+      title: "缺少字段",
+    })).toThrow("description");
+  });
+});

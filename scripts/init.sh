@@ -17,6 +17,15 @@ prompt() {
   echo "${value:-$default}"
 }
 
+require_notion_id() {
+  local label="$1"
+  local id="$2"
+  if [ -z "$id" ] || [ "$id" = "null" ]; then
+    printf "Error: Notion %s 创建失败，未返回有效 id\n" "$label" >&2
+    exit 1
+  fi
+}
+
 printf "\n=== oh-my-sdlc 初始化 ===\n\n" >&2
 
 # ── Notion Token ──
@@ -68,16 +77,22 @@ MONITOR_PROPS='{"名称":{"title":{}},"时间":{"date":{}},"类型":{"select":{"
 
 printf "创建需求库...\n" >&2
 DB_REQUIREMENTS_ID=$(notion_create_database "$NOTION_PAGE_ID" "${PROJECT_NAME} 需求库" "$REQ_PROPS" | jq -r '.id')
+require_notion_id "需求库" "$DB_REQUIREMENTS_ID"
 printf "创建Sprint表...\n" >&2
 DB_SPRINTS_ID=$(notion_create_database "$NOTION_PAGE_ID" "${PROJECT_NAME} Sprint表" "$SPRINT_PROPS" | jq -r '.id')
+require_notion_id "Sprint表" "$DB_SPRINTS_ID"
 printf "创建任务表...\n" >&2
 DB_TASKS_ID=$(notion_create_database "$NOTION_PAGE_ID" "${PROJECT_NAME} 任务表" "$TASK_PROPS" | jq -r '.id')
+require_notion_id "任务表" "$DB_TASKS_ID"
 printf "创建知识库...\n" >&2
 DB_KNOWLEDGE_ID=$(notion_create_database "$NOTION_PAGE_ID" "${PROJECT_NAME} 知识库" "$KNOW_PROPS" | jq -r '.id')
+require_notion_id "知识库" "$DB_KNOWLEDGE_ID"
 printf "创建部署记录...\n" >&2
 DB_DEPLOYMENTS_ID=$(notion_create_database "$NOTION_PAGE_ID" "${PROJECT_NAME} 部署记录" "$DEPLOY_PROPS" | jq -r '.id')
+require_notion_id "部署记录" "$DB_DEPLOYMENTS_ID"
 printf "创建监控日志...\n" >&2
 DB_MONITOR_LOGS_ID=$(notion_create_database "$NOTION_PAGE_ID" "${PROJECT_NAME} 监控日志" "$MONITOR_PROPS" | jq -r '.id')
+require_notion_id "监控日志" "$DB_MONITOR_LOGS_ID"
 
 # ── Pass 2: Add relation properties ──
 printf "\n=== 添加数据库关联（第二步）===\n" >&2
@@ -209,8 +224,10 @@ printf "→ 监控日志 heartbeat 记录\n" >&2
 printf "\n=== 初始化完成 ===\n" >&2
 printf "\n下一步：\n" >&2
 printf "  1. 确认 NOTION_TOKEN 已配置（重新加载终端或运行 source ~/.bashrc）\n" >&2
-printf "  2. 在 Claude Code 中通过 .claude/mcp.json 加载 MCP Server\n" >&2
-printf "  3. 运行 scripts/get-next-work.sh 开始工作\n" >&2
+printf "  2. 运行以下命令之一启动 Agent 并自动开始工作：\n" >&2
+printf "     - sdlc start claude\n" >&2
+printf "     - sdlc start antigravity\n" >&2
+printf "     - sdlc start gemini\n" >&2
 if [ "$MODE" = "B" ]; then
   printf "\n  ⚠️  已有项目：第一个 Agent 启动时先执行 skills/bootstrap.md 扫描代码库\n" >&2
 fi

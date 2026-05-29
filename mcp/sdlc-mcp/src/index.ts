@@ -67,6 +67,13 @@ export function handleToolCall(
         str("tech_stack"),
       ]);
 
+    case "submit_feedback":
+      return runScript(projectRoot, "submit-feedback", [
+        str("title"),
+        str("description"),
+        str("category"),
+      ]);
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -149,6 +156,23 @@ function createServer(projectRoot: string): Server {
             tech_stack: { type: "string" },
           },
           required: ["module_name", "description", "key_files", "tech_stack"],
+        },
+      },
+      {
+        name: "submit_feedback",
+        description: "向 oh-my-sdlc 上游提交改进建议或 Bug 反馈",
+        inputSchema: {
+          type: "object",
+          properties: {
+            title: { type: "string", description: "反馈标题" },
+            description: { type: "string", description: "详细描述" },
+            category: {
+              type: "string",
+              enum: ["bug", "feature", "improvement", "question"],
+              description: "分类",
+            },
+          },
+          required: ["title", "description", "category"],
         },
       },
     ],

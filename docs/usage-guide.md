@@ -158,8 +158,10 @@ Workflow 文件路径 [.github/workflows/deploy.yml]:
 
 下一步：
   1. 确认 NOTION_TOKEN 已配置（重新加载终端或运行 source ~/.bashrc）
-  2. 在 Claude Code 中通过 .claude/mcp.json 加载 MCP Server
-  3. 运行 scripts/get-next-work.sh 开始工作
+  2. 运行以下命令之一启动 Agent 并自动开始工作：
+     - sdlc start claude
+     - sdlc start antigravity
+     - sdlc start gemini
 ```
 
 初始化会自动创建：
@@ -236,13 +238,18 @@ cd mcp/sdlc-mcp && npm install
 
 **首次启动 Agent：**
 
-在 Claude Code 会话中输入：
+你可以直接运行：
+
+```bash
+sdlc start claude
+```
+
+这会自动唤起 Claude Code 并携带指令进入工作循环，无需进一步操作。
+如果你已经在 Claude Code 会话中，则输入：
 
 ```
-请阅读 CLAUDE.md，然后开始工作。
+请阅读 CLAUDE.md，然后开始工作并持续自动执行直到没有任务。
 ```
-
-Claude Code 会自动进入工作循环，无需进一步指令。
 
 ---
 
@@ -289,14 +296,13 @@ agy plugin list
 进入项目启动：
 
 ```bash
-cd your-project
-agy
+sdlc start antigravity
 ```
 
-首次启动输入：
+这会自动唤起 `agy` 并进入工作循环。如果你已经在 `agy` 会话中，首次启动输入：
 
 ```text
-请按 oh-my-sdlc 规则开始工作。
+请按 oh-my-sdlc 规则开始工作并持续自动执行直到没有任务。
 ```
 
 Antigravity Editor 的 MCP 配置文件位于 `~/.gemini/antigravity/mcp_config.json`。如果使用 Editor 而不是 CLI，可将 `plugins/antigravity-cli/mcp_config.json` 中的 `mcpServers.sdlc` 合并到该文件。
@@ -357,13 +363,13 @@ export GEMINI_API_KEY="your-key"
 
 ```bash
 cd your-project
-gemini
+sdlc start gemini
 ```
 
-Gemini CLI 会读取当前目录的 `GEMINI.md` 作为上下文。首次启动输入：
+这会自动唤起 Gemini CLI 并进入工作循环。如果你已经在 `gemini` 会话中，首次启动输入：
 
 ```
-请阅读 GEMINI.md，然后开始工作。
+请阅读 GEMINI.md，然后开始工作并持续自动执行直到没有任务。
 ```
 
 **检查 MCP 是否已加载：**
@@ -458,6 +464,18 @@ agy     # 启动 Antigravity CLI Agent（也可以是 claude/gemini）
 ```
 
 两个 Agent 会自动协调任务抢占，不会重复执行同一任务。
+
+---
+
+## 提交改进建议（Feedback）
+
+oh-my-sdlc 支持直接向框架维护者反馈 Bug 或功能建议。该功能通过 `submit_feedback` 工具暴露给 Agent。
+
+**使用方法**：
+你可以随时告诉 Agent 提交反馈。例如：
+> "请调用 submit_feedback，建议 oh-my-sdlc 增加测试覆盖率统计，分类选 improvement"
+
+这会自动将建议提交到 oh-my-sdlc 的上游 Notion 数据库。你的本地项目配置（`config.json` 中的 6 张表）不受任何影响，反馈功能使用独立分发的 `.sdlc/upstream.json` 文件。
 
 ---
 

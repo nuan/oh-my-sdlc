@@ -4,6 +4,44 @@ set -euo pipefail
 NOTION_API="https://api.notion.com/v1"
 NOTION_VERSION="2022-06-28"
 
+notion_request() {
+  local method="$1"
+  local url="$2"
+  local body="${3:-}"
+  local response
+
+  if [ -n "$body" ]; then
+    response=$(curl -s -X "$method" \
+      -H "Authorization: Bearer ${NOTION_TOKEN}" \
+      -H "Notion-Version: ${NOTION_VERSION}" \
+      -H "Content-Type: application/json" \
+      -d "$body" \
+      "$url")
+  else
+    response=$(curl -s -X "$method" \
+      -H "Authorization: Bearer ${NOTION_TOKEN}" \
+      -H "Notion-Version: ${NOTION_VERSION}" \
+      "$url")
+  fi
+
+  if ! echo "$response" | jq -e . >/dev/null 2>&1; then
+    echo "Error: Notion API returned non-JSON response" >&2
+    echo "$response" >&2
+    return 1
+  fi
+
+  if echo "$response" | jq -e '.object == "error"' >/dev/null; then
+    local status code message
+    status=$(echo "$response" | jq -r '.status // "unknown"')
+    code=$(echo "$response" | jq -r '.code // "unknown_error"')
+    message=$(echo "$response" | jq -r '.message // "No error message"')
+    echo "Error: Notion API request failed (${status} ${code}): ${message}" >&2
+    return 1
+  fi
+
+  echo "$response"
+}
+
 load_config() {
   if [ -z "${NOTION_TOKEN:-}" ]; then
     echo "Error: NOTION_TOKEN environment variable not set" >&2
@@ -40,12 +78,7 @@ notion_query_db() {
   if [ -n "$filter" ]; then
     body=$(echo "{}" | jq --argjson f "$filter" '. + {filter: $f}')
   fi
-  curl -s -X POST \
-    -H "Authorization: Bearer ${NOTION_TOKEN}" \
-    -H "Notion-Version: ${NOTION_VERSION}" \
-    -H "Content-Type: application/json" \
-    -d "$body" \
-    "${NOTION_API}/databases/${db_id}/query"
+  notion_request POST "${NOTION_API}/databases/${db_id}/query" "$body"
 }
 
 notion_create_page() {
@@ -56,12 +89,7 @@ notion_create_page() {
     --arg db_id "$db_id" \
     --argjson props "$properties" \
     '{parent: {database_id: $db_id}, properties: $props}')
-  curl -s -X POST \
-    -H "Authorization: Bearer ${NOTION_TOKEN}" \
-    -H "Notion-Version: ${NOTION_VERSION}" \
-    -H "Content-Type: application/json" \
-    -d "$body" \
-    "${NOTION_API}/pages"
+  notion_request POST "${NOTION_API}/pages" "$body"
 }
 
 notion_update_page() {
@@ -69,20 +97,12 @@ notion_update_page() {
   local properties="$2"
   local body
   body=$(jq -n --argjson props "$properties" '{properties: $props}')
-  curl -s -X PATCH \
-    -H "Authorization: Bearer ${NOTION_TOKEN}" \
-    -H "Notion-Version: ${NOTION_VERSION}" \
-    -H "Content-Type: application/json" \
-    -d "$body" \
-    "${NOTION_API}/pages/${page_id}"
+  notion_request PATCH "${NOTION_API}/pages/${page_id}" "$body"
 }
 
 notion_get_page() {
   local page_id="$1"
-  curl -s -X GET \
-    -H "Authorization: Bearer ${NOTION_TOKEN}" \
-    -H "Notion-Version: ${NOTION_VERSION}" \
-    "${NOTION_API}/pages/${page_id}"
+  notion_request GET "${NOTION_API}/pages/${page_id}"
 }
 
 prop_title() { jq -n --arg v "$1" '{title: [{text: {content: $v}}]}'; }
@@ -127,12 +147,7 @@ notion_create_database() {
     --arg title "$title" \
     --argjson props "$properties_json" \
     '{parent:{type:"page_id",page_id:$parent_id},title:[{text:{content:$title}}],properties:$props}')
-  curl -s -X POST \
-    -H "Authorization: Bearer ${NOTION_TOKEN}" \
-    -H "Notion-Version: ${NOTION_VERSION}" \
-    -H "Content-Type: application/json" \
-    -d "$payload" \
-    "${NOTION_API}/databases"
+  notion_request POST "${NOTION_API}/databases" "$payload"
 }
 
 notion_update_database() {
@@ -140,10 +155,5 @@ notion_update_database() {
   local properties_json="$2"
   local body
   body=$(jq -n --argjson props "$properties_json" '{properties: $props}')
-  curl -s -X PATCH \
-    -H "Authorization: Bearer ${NOTION_TOKEN}" \
-    -H "Notion-Version: ${NOTION_VERSION}" \
-    -H "Content-Type: application/json" \
-    -d "$body" \
-    "${NOTION_API}/databases/${db_id}"
+  notion_request PATCH "${NOTION_API}/databases/${db_id}" "$body"
 }

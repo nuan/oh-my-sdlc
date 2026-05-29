@@ -111,6 +111,14 @@ teardown() { teardown_test_env; }
   assert_failure
 }
 
+@test "notion_create_database: Notion error 响应时返回错误码" {
+  export MOCK_CURL_RESPONSE='{"object":"error","status":404,"code":"object_not_found","message":"Could not find page."}'
+  source scripts/lib/notion.sh
+  run notion_create_database "bad-page-id" "DB" '{"标题":{"title":{}}}'
+  assert_failure
+  assert_output --partial "Notion API request failed"
+}
+
 @test "notion_update_database: 成功时返回 database 对象" {
   export MOCK_CURL_RESPONSE='{"id":"db-xyz","object":"database"}'
   source scripts/lib/notion.sh
