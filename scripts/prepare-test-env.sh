@@ -12,13 +12,28 @@ if [ -z "$SPRINT_OR_BRANCH" ]; then
     exit 1
 fi
 
-CONFIG_FILE="$PROJECT_DIR/.sdlc/config.json"
 BRANCH_NAME="$SPRINT_OR_BRANCH"
-if [ -f "$CONFIG_FILE" ]; then
-    MAPPED_BRANCH=$(jq -r --arg key "$SPRINT_OR_BRANCH" '.sprint_branches[$key] // empty' "$CONFIG_FILE")
-    if [ -n "$MAPPED_BRANCH" ]; then
-        BRANCH_NAME="$MAPPED_BRANCH"
-        echo "Resolved Sprint ID '$SPRINT_OR_BRANCH' to branch '$BRANCH_NAME'"
+
+if [[ "$SPRINT_OR_BRANCH" =~ ^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$ ]]; then
+    # Load config to ensure variables are set if needed (mostly NOTION_TOKEN is already in env)
+    sprint_page=$(notion_get_page "$SPRINT_OR_BRANCH" 2>/dev/null || true)
+    if [ -n "$sprint_page" ] && echo "$sprint_page" | jq -e '.object == "page"' >/dev/null 2>&1; then
+        sprint_branch=$(echo "$sprint_page" | jq -r '.properties["分支"].rich_text[0].plain_text // empty')
+        if [ -n "$sprint_branch" ]; then
+            BRANCH_NAME="$sprint_branch"
+            echo "Resolved Sprint ID '$SPRINT_OR_BRANCH' to branch '$BRANCH_NAME' via Notion property"
+        fi
+    fi
+fi
+
+if [ "$BRANCH_NAME" = "$SPRINT_OR_BRANCH" ]; then
+    CONFIG_FILE="$PROJECT_DIR/.sdlc/config.json"
+    if [ -f "$CONFIG_FILE" ]; then
+        MAPPED_BRANCH=$(jq -r --arg key "$SPRINT_OR_BRANCH" '.sprint_branches[$key] // empty' "$CONFIG_FILE")
+        if [ -n "$MAPPED_BRANCH" ]; then
+            BRANCH_NAME="$MAPPED_BRANCH"
+            echo "Resolved Sprint ID '$SPRINT_OR_BRANCH' to branch '$BRANCH_NAME' via config"
+        fi
     fi
 fi
 

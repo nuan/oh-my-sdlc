@@ -37,16 +37,23 @@ sorted_reqs=$(echo "$ready_result" | jq -c \
 
 sprint_number=$((RANDOM % 900 + 100))
 sprint_name="Sprint-${sprint_number}"
+sprint_branch="feature/sprint-${sprint_number}"
+
+if ! git show-ref --verify --quiet "refs/heads/$sprint_branch"; then
+  git branch "$sprint_branch" main 2>/dev/null || git branch "$sprint_branch" HEAD
+fi
 
 sprint_page=$(notion_create_page "$DB_SPRINTS" "$(jq -n \
   --arg name "$sprint_name" \
   --arg start "$NOW_ISO" \
   --arg end "$END_ISO" \
+  --arg branch "$sprint_branch" \
   '{
     "名称": {title: [{text: {content: $name}}]},
     "状态": {select: {name: "Active"}},
     "开始日期": {date: {start: $start}},
-    "结束日期": {date: {start: $end}}
+    "结束日期": {date: {start: $end}},
+    "分支": {rich_text: [{text: {content: $branch}}]}
   }')")
 sprint_id=$(echo "$sprint_page" | jq -r '.id')
 
