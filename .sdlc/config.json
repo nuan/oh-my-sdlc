@@ -1,25 +1,29 @@
 {
+  "project_name": "oh-my-sdlc",
+  "project_mode": "B",
+  "notion_page_id": "36f1f58ca2e7808eb870f9e6e5bd19cd",
   "databases": {
-    "requirements": "req-db-id",
-    "sprints": "sprint-db-id",
-    "tasks": "task-db-id",
-    "deployments": "deploy-db-id",
-    "monitor_logs": "monitor-db-id",
-    "knowledge": "knowledge-db-id"
+    "requirements": "36f1f58c-a2e7-81d2-b7ee-cca1c9c53669",
+    "sprints": "36f1f58c-a2e7-81b2-9c0b-c5c6654266a2",
+    "tasks": "36f1f58c-a2e7-81e5-a030-ff2839af934e",
+    "knowledge": "36f1f58c-a2e7-8150-ab85-ed1c0f4d46ac",
+    "deployments": "36f1f58c-a2e7-81ea-aa44-c115fa2d9f2b",
+    "monitor_logs": "36f1f58c-a2e7-81e2-b31e-d5fd7e5f07df",
+    "bugs": "36f1f58c-a2e7-8154-b034-fd0588ab8977",
+    "test_reports": "36f1f58c-a2e7-815c-9edc-c9f6144cc301"
   },
   "sprint": {
-    "duration_days": 14,
+    "duration_days": 5,
     "capacity": 10
   },
   "deploy": {
-    "method": "github-actions",
-    "trigger": "workflow_dispatch"
+    "method": "script",
+    "trigger": "./scripts/deploy.sh",
+    "test_script": "npm run deploy:test"
   },
   "monitor": {
     "interval_hours": 6,
-    "checks": [
-      { "type": "http", "url": "https://example.com/health", "expect_status": 200 }
-    ]
+    "checks": []
   },
   "quota": {
     "daily_task_limit": 10,

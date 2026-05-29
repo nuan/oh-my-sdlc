@@ -74,6 +74,13 @@ export function handleToolCall(
         str("category"),
       ]);
 
+    
+    case "prepare_test_env":
+      return runScript(projectRoot, "prepare-test-env", [
+        args["project_dir"] ? str("project_dir") : ".",
+        str("branch_name")
+      ]);
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
