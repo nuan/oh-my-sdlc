@@ -80,7 +80,8 @@ while IFS= read -r req; do
     }')" > /dev/null
 
   notion_update_page "$req_id" \
-    "$(jq -n '{"状态": {select: {name: "In Sprint"}}}')" > /dev/null
+    "$(jq -n --arg sprint_id "$sprint_id" \
+      '{"状态": {select: {name: "In Sprint"}}, "Sprint": {relation: [{id: $sprint_id}]}}')" > /dev/null
 
   tasks_created=$((tasks_created + 1))
 done < <(echo "$sorted_reqs" | jq -c '.[]')
